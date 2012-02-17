@@ -27,5 +27,5 @@ resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Applify
   homepage: http://metacpan.org/dist/Applify
   license: http://dev.perl.org/licenses/
-  repository: https://jhthorsen@github.com/jhthorsen/Applify.git
+  repository: https://github.com/jhthorsen/applify.git
 version: 0.01
