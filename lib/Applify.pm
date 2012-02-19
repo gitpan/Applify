@@ -6,7 +6,7 @@ Applify - Write object oriented scripts with ease
 
 =head1 VERSION
 
-0.01
+0.02
 
 =head1 DESCRIPTION
 
@@ -92,7 +92,7 @@ use constant SUB_NAME_IS_AVAILABLE
      : eval 'use Sub::Name; 1'        ? 1
      :                                  0;
 
-our $VERSION = eval '0.01';
+our $VERSION = eval '0.02';
 our $PERLDOC = 'perldoc';
 my $ANON = 1;
 
@@ -169,6 +169,11 @@ Used as description text when printing the usage text.
 =item * C<required>
 
 The script will not start if a required field is omitted.
+
+=item * C<n_of>
+
+Allow the option to hold a list of values. Examples: "@", "4", "1,3".
+See L<Getopt::Long/Options-with-multiple-values> for details.
 
 =item * Other
 
@@ -274,14 +279,17 @@ sub app {
     my($self, $code) = @_;
     my $app = {};
     my $parser = $self->_option_parser;
-    my(@options_spec, %defaults, $application_class);
+    my(@options_spec, $application_class);
 
     for my $option (@{ $self->{'options'} }) {
+        my $switch = $self->_attr_to_option($option->{'name'});
         push @options_spec, $self->_calculate_option_spec($option);
-        $defaults{$option->{'name'}} = $option->{'default'} if(exists $option->{'default'}); # set defaults on application object
+        $app->{$switch} = $option->{'default'} if(exists $option->{'default'});
     }
 
-    $parser->getoptions($app, @options_spec, $self->_default_options);
+    unless($parser->getoptions($app, @options_spec, $self->_default_options)) {
+        $self->_exit(1);
+    }
 
     if($app->{'help'}) {
         $self->print_help;
@@ -298,7 +306,6 @@ sub app {
 
     $application_class = $self->_generate_application_class($code);
     $app = $application_class->new({
-                %defaults,
                 map { my $k = $self->_option_to_attr($_); $k => $app->{$_} } keys %$app,
             });
 
@@ -318,6 +325,12 @@ sub _calculate_option_spec {
     elsif($option->{'type'} =~ /^file/) { $spec .= '=s' } # TODO
     elsif($option->{'type'} =~ /^dir/) { $spec .= '=s' } # TODO
     else { die 'Usage: option {bool|flag|inc|str|int|num|file|dir} ...' }
+
+    if(my $n_of = $option->{'n_of'}) {
+        $spec .= $n_of eq '@' ? $n_of : "{$n_of}";
+        $option->{'default'} and ref $option->{'default'} ne 'ARRAY' and die 'Usage option ... default => [Need to be an array ref]';
+        $option->{'default'} ||= [];
+    }
 
     return $spec;
 }
@@ -370,7 +383,7 @@ sub _generate_application_class {
         for my $option (@{ $self->{'options'} }) {
             my $name = $option->{'name'};
             my $fqn = join '::', $application_class, $option->{'name'};
-            __new_sub $fqn => sub { $_[0]->{$name} };
+            __new_sub $fqn => sub { @_ == 2 and $_[0]->{$name} = $_[1]; $_[0]->{$name} };
             push @required, $name if($option->{'required'});
         }
 
@@ -446,6 +459,8 @@ sub print_help {
     push @options, { name => 'version', documentation => 'Print application name and version' } if($self->version);
     push @options, { name => '' };
 
+    $self->_print_synopsis;
+
     OPTION:
     for my $option (@options) {
         my $length = length $option->{'name'};
@@ -466,6 +481,26 @@ sub print_help {
     }
 
     return $self;
+}
+
+sub _print_synopsis {
+    my $self = shift;
+    my $documentation = $self->documentation or return;
+    my $print;
+
+    unless(-e $documentation) {
+        eval "use $documentation; 1" or die "Could not load $documentation: $@";
+        $documentation =~ s!::!/!g;
+        $documentation = $INC{"$documentation.pm"};
+    }
+
+    open my $FH, '<', $documentation or die "Failed to read synopsis from $documentation: $@";
+
+    while(<$FH>) {
+        last if($print and /^=(?:cut|head1)/);
+        print if($print);
+        $print = 1 if(/^=head1 SYNOPSIS/);
+    }
 }
 
 =head2 print_version

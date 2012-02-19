@@ -4,7 +4,7 @@ use lib qw(lib);
 use Test::More;
 use Applify ();
 
-plan tests => 40;
+plan tests => 44;
 
 {
     my $app = eval q[
@@ -62,6 +62,8 @@ plan tests => 40;
     is($script->_calculate_option_spec({ name => 'a_b', type => 'str' }), 'a-b=s', 'a_b=s');
     is($script->_calculate_option_spec({ name => 'a_b', type => 'int' }), 'a-b=i', 'a_b=i');
     is($script->_calculate_option_spec({ name => 'a_b', type => 'num' }), 'a-b=f', 'a_b=f');
+    is($script->_calculate_option_spec({ name => 'a_b', type => 'num', n_of => '@' }), 'a-b=f@', 'a_b=f@');
+    is($script->_calculate_option_spec({ name => 'a_b', type => 'num', n_of => '0,3' }), 'a-b=f{0,3}', 'a_b=f{0,3}');
 
     {
         local $TODO = 'Add proper support for file/dir';
@@ -100,8 +102,12 @@ Usage:
     is($script->version('1.23'), $script, 'version(...) return $self');
     is($script->version, '1.23', 'version() return what was set');
 
+    $script->documentation(__FILE__);
     is_deeply([$script->_default_options], [qw/ help man version /], 'default options after documentation() and version()');
     is((run_method($script, 'print_help'))[0], <<'    HELP', 'print_help()');
+
+dummy synopsis...
+
 Usage:
    --foo-bar  Foo can something
    --foo-2    foo_2 can something else
@@ -130,8 +136,12 @@ Usage:
     isa_ok($script, 'Applify');
     can_ok($app, qw/ input_file output_dir dry_run generate_exit_value /);
 
-    eval { run_method($app, 'run') };
+    run_method($app, 'run');
     is($@, "Required attribute missing: --dry-run\n", '--dry-run missing');
+
+    is($app->dry_run, undef, '--dry-run is not set');
+    $app->dry_run(1);
+    is($app->dry_run, 1, '--dry-run was set');
 }
 
 sub run_method {
@@ -142,5 +152,12 @@ sub run_method {
     my $stderr = '';
     open STDOUT, '>', \$stdout;
     open STDERR, '>', \$stderr;
-    return $stdout, $stderr, $thing->$method(@args);
+    my $ret = eval { $thing->$method(@args) };
+    return $@ || $stdout, $@ || $stderr, $ret;
 }
+
+=head1 SYNOPSIS
+
+dummy synopsis...
+
+=cut
