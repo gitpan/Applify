@@ -6,7 +6,7 @@ Applify - Write object oriented scripts with ease
 
 =head1 VERSION
 
-0.04
+0.05
 
 =head1 DESCRIPTION
 
@@ -26,9 +26,9 @@ are define directly in the script file and not in a module.
     documentation __FILE__;
     version 1.23;
 
-    sub generate_exit_value => sub {
+    sub generate_exit_value {
         return int rand 100;
-    };
+    }
 
     app {
         my($self, @extra) = @_;
@@ -86,22 +86,21 @@ application object.
 use strict;
 use warnings;
 use File::Basename ();
-use Getopt::Long ();
 
 use constant SUB_NAME_IS_AVAILABLE
     => $INC{'App/FatPacker/Trace.pm'} ? 0 # this will be true when running under "fatpack"
      : eval 'use Sub::Name; 1'        ? 1
      :                                  0;
 
-our $VERSION = eval '0.04';
+our $VERSION = eval '0.05';
 our $PERLDOC = 'perldoc';
 my $ANON = 1;
 
 sub __new_sub {
     my($fqn, $code) = @_;
     no strict 'refs';
-    *$fqn = Sub::Name::subname($fqn, $code) if SUB_NAME_IS_AVAILABLE;
-    *$fqn = $code unless SUB_NAME_IS_AVAILABLE;
+    return if *$fqn{'CODE'};
+    *$fqn = SUB_NAME_IS_AVAILABLE ? Sub::Name::subname($fqn, $code) : $code;
 }
 
 =head1 EXPORTED FUNCTIONS
@@ -341,8 +340,8 @@ sub _default_options {
     my @default;
 
     push @default, 'help';
-    push @default, 'man' if($self->documentation);
-    push @default, 'version' if($self->version);
+    push @default, 'man'     if $self->documentation;
+    push @default, 'version' if $self->version;
 
     return @default;
 }
@@ -365,7 +364,7 @@ sub _generate_application_class {
 
     {
         no strict 'refs';
-        __new_sub "$application_class\::new" => sub { my $class = shift; bless shift, $class } unless(grep { $_->can('new') } @$extends);
+        __new_sub "$application_class\::new" => sub { my $class = shift; bless shift, $class } unless grep { $_->can('new') } @$extends;
         __new_sub "$application_class\::_script" => sub { $self };
         __new_sub "$application_class\::run" => sub {
             my($app, @extra) = @_;
@@ -395,7 +394,7 @@ sub _generate_application_class {
             my $name = $option->{'name'};
             my $fqn = join '::', $application_class, $option->{'name'};
             __new_sub $fqn => sub { @_ == 2 and $_[0]->{$name} = $_[1]; $_[0]->{$name} };
-            push @required, $name if($option->{'required'});
+            push @required, $name if $option->{'required'};
         }
     }
 
@@ -413,7 +412,12 @@ Holds the application options given to L</option>.
 =cut
 
 sub options { $_[0]->{'options'} }
-sub _option_parser { $_[0]->{'_option_parser'} ||= Getopt::Long::Parser->new(config => [ qw( no_auto_help no_auto_version pass_through ) ]) }
+sub _option_parser {
+    $_[0]->{'_option_parser'} ||= do {
+        require Getopt::Long;
+        Getopt::Long::Parser->new(config => [ qw( no_auto_help no_auto_version pass_through ) ]);
+    };
+}
 
 =head1 METHODS
 
