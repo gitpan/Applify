@@ -28,4 +28,4 @@ resources:
   homepage: http://metacpan.org/dist/Applify
   license: http://dev.perl.org/licenses/
   repository: https://github.com/jhthorsen/applify.git
-version: 0.05
+version: 0.0501
