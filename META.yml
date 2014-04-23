@@ -1,14 +1,13 @@
 ---
 abstract: 'Write object oriented scripts with ease'
 author:
-  - 'Jan Henning Thorsen'
+  - 'Jan Henning Thorsen <jhthorsen@cpan.org>'
 build_requires:
-  ExtUtils::MakeMaker: 6.36
+  Test::More: 0.98
 configure_requires:
-  ExtUtils::MakeMaker: 6.36
-distribution_type: module
+  ExtUtils::MakeMaker: 0
 dynamic_config: 1
-generated_by: 'Module::Install version 1.06'
+generated_by: 'ExtUtils::MakeMaker version 6.66, CPAN::Meta::Converter version 2.120921'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -16,16 +15,15 @@ meta-spec:
 name: Applify
 no_index:
   directory:
-    - example
-    - inc
     - t
+    - inc
 requires:
   Cwd: 3.31
-  File::Basename: 2.7
+  File::Basename: 2.70
   Getopt::Long: 2.38
 resources:
-  bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Applify
-  homepage: http://metacpan.org/dist/Applify
+  bugtracker: https://github.com/jhthorsen/applify/issues
+  homepage: https://metacpan.org/release/Applify
   license: http://dev.perl.org/licenses/
-  repository: https://github.com/jhthorsen/applify.git
-version: 0.0501
+  repository: https://github.com/jhthorsen/applify
+version: 0.06
