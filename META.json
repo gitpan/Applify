@@ -6,7 +6,7 @@
    "dynamic_config" : 1,
    "generated_by" : "ExtUtils::MakeMaker version 6.66, CPAN::Meta::Converter version 2.120921",
    "license" : [
-      "perl_5"
+      "artistic_2"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -22,7 +22,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Test::More" : "0.98"
+            "Test::More" : "0.88"
          }
       },
       "configure" : {
@@ -43,13 +43,10 @@
       "bugtracker" : {
          "web" : "https://github.com/jhthorsen/applify/issues"
       },
-      "homepage" : "https://metacpan.org/release/Applify",
-      "license" : [
-         "http://dev.perl.org/licenses/"
-      ],
+      "homepage" : "https://github.com/jhthorsen/applify",
       "repository" : {
-         "url" : "https://github.com/jhthorsen/applify"
+         "url" : "https://github.com/jhthorsen/applify.git"
       }
    },
-   "version" : "0.06"
+   "version" : "0.07"
 }
