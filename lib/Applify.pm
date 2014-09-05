@@ -6,7 +6,7 @@ Applify - Write object oriented scripts with ease
 
 =head1 VERSION
 
-0.07
+0.08
 
 =head1 DESCRIPTION
 
@@ -91,7 +91,7 @@ use constant SUB_NAME_IS_AVAILABLE => $INC{'App/FatPacker/Trace.pm'}
   ? 0    # this will be true when running under "fatpack"
   : eval 'use Sub::Name; 1' ? 1 : 0;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 our $PERLDOC = 'perldoc';
 my $ANON = 1;
 
@@ -384,8 +384,7 @@ sub _generate_application_class {
       }
     }
 
-    $meta = $application_class->meta if $application_class->can('meta');
-    $meta = undef unless UNIVERSAL::can($meta, 'add_attribute');
+    $meta = $application_class->meta if $application_class->isa('Moose::Object') and $application_class->can('meta');
 
     for my $option (@{$self->{options}}) {
       my $name = $option->{name};
