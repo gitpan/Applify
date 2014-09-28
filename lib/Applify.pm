@@ -6,7 +6,7 @@ Applify - Write object oriented scripts with ease
 
 =head1 VERSION
 
-0.08
+0.09
 
 =head1 DESCRIPTION
 
@@ -91,7 +91,7 @@ use constant SUB_NAME_IS_AVAILABLE => $INC{'App/FatPacker/Trace.pm'}
   ? 0    # this will be true when running under "fatpack"
   : eval 'use Sub::Name; 1' ? 1 : 0;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 our $PERLDOC = 'perldoc';
 my $ANON = 1;
 
@@ -377,7 +377,7 @@ sub _generate_application_class {
 
       for my $name (keys %$ns) {
         $self->{skip_subs}{$name} and next;
-        my $code = eval { *{$ns->{$name}}{CODE} } or next;
+        my $code = eval { ref $ns->{$name} eq 'CODE' ? $ns->{$name} : *{$ns->{$name}}{CODE} } or next;
         my $fqn = join '::', $application_class, $name;
         __new_sub $fqn => $code;
         delete $ns->{$name};    # may be a bit too destructive?
